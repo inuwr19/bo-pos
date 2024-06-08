@@ -8,9 +8,37 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use OpenApi\Annotations as OA;
 
+
+/**
+ * @OA\Info(
+ *   title="Your API Title",
+ *   version="1.0.0",
+ *   description="BO Kopi API Documentation",
+ *   @OA\Contact(
+ *     email="kibo123@gmail.com"
+ *   )
+ * )
+ */
 class AuthController extends Controller
 {
+    /**
+     * @OA\Post(
+     *     path="/api/register",
+     *     summary="Register a new user",
+     *     tags={"Auth"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/User")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(ref="#/components/schemas/User")
+     *     )
+     * )
+     */
     public function register(Request $request)
     {
         $validatedData = $request->validate([
@@ -30,6 +58,31 @@ class AuthController extends Controller
         return response()->json($user, 201);
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/login",
+     *     summary="Login user",
+     *     tags={"Auth"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="email", type="string", example="john.doe@example.com"),
+     *             @OA\Property(property="password", type="string", example="password123")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="token", type="string", example="1|abcdefghijk")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized"
+     *     )
+     * )
+     */
     public function login(Request $request)
     {
         $request->validate([
@@ -47,6 +100,25 @@ class AuthController extends Controller
         return response()->json(['token' => $token]);
     }
 
+    /**
+         * @OA\Post(
+         *     path="/api/logout",
+         *     summary="Logout user",
+         *     tags={"Auth"},
+         *     security={{"bearerAuth":{}}},
+         *     @OA\Response(
+         *         response=200,
+         *         description="Successfully logged out",
+         *         @OA\JsonContent(
+         *             @OA\Property(property="message", type="string", example="Successfully logged out")
+         *         )
+         *     ),
+         *     @OA\Response(
+         *         response=401,
+         *         description="Unauthorized"
+         *     )
+         * )
+     */
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
