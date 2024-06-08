@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
@@ -36,13 +37,20 @@ class AuthController extends Controller
             'password' => 'required|string',
         ]);
 
-        if (!auth()->attempt($request->only('email', 'password'))) {
+        if (!Auth::attempt($request->only('email', 'password'))) {
             return response()->json(['message' => 'Unauthorized'], 401);
         }
 
-        $user = auth()->user();
+        $user = Auth::user();
         $token = $user->createToken('token')->plainTextToken;
 
-        return response()->json(['token' => $token, 'user'=>$user], 200);
+        return response()->json(['token' => $token]);
+    }
+
+    public function logout(Request $request)
+    {
+        $request->user()->currentAccessToken()->delete();
+
+        return response()->json(['message' => 'Successfully logged out']);
     }
 }
